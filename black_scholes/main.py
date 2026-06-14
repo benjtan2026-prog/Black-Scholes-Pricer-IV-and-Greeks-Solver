@@ -1,12 +1,4 @@
-"""
-main.py
--------
-Wires together the Black-Scholes pricer, Greeks, and IV solver.
-Fetches a real options chain via yfinance and verifies outputs.
-
-Run from the black_scholes/ directory:
-    python main.py
-"""
+# main.py
 
 import math
 import datetime
@@ -17,12 +9,10 @@ from greeks import delta, gamma, vega, theta, rho
 from iv_solver import implied_volatility
 
 
-# ─────────────────────────────────────────────
-# SECTION 1: Fetch real market data
-# ─────────────────────────────────────────────
+# ── SECTION 1: Fetch real market data ────────────────────────────
 
 TICKER = "AAPL"
-RISK_FREE_RATE = 0.053  # approximate 10-yr US treasury yield
+RISK_FREE_RATE = 0.053
 
 ticker = yf.Ticker(TICKER)
 
@@ -35,16 +25,13 @@ print(f"\nAvailable expiries: {expiry_dates[:5]} ...")
 
 expiry_str  = expiry_dates[1]
 expiry_date = datetime.datetime.strptime(expiry_str, "%Y-%m-%d").date()
-
 today          = datetime.date.today()
 days_to_expiry = (expiry_date - today).days
 T              = days_to_expiry / 365.0
 print(f"\nUsing expiry: {expiry_str}  ({days_to_expiry} days, T = {T:.4f} years)")
 
 
-# ─────────────────────────────────────────────
-# SECTION 2: Pull the options chain
-# ─────────────────────────────────────────────
+# ── SECTION 2: Pull the options chain ────────────────────────────
 
 chain    = ticker.option_chain(expiry_str)
 calls_df = chain.calls
@@ -63,9 +50,7 @@ print(f"ATM call mid-price: ${call_market_price:.2f}")
 print(f"ATM put  mid-price: ${put_market_price:.2f}")
 
 
-# ─────────────────────────────────────────────
-# SECTION 3: Implied volatility
-# ─────────────────────────────────────────────
+# ── SECTION 3: Implied volatility ────────────────────────────────
 
 call_iv = implied_volatility(call_market_price, S, K, T, RISK_FREE_RATE, 'call')
 put_iv  = implied_volatility(put_market_price,  S, K, T, RISK_FREE_RATE, 'put')
@@ -76,9 +61,7 @@ print(f"Implied volatility (put):  {put_iv  * 100:.2f}%")
 sigma = call_iv
 
 
-# ─────────────────────────────────────────────
-# SECTION 4: Theoretical prices
-# ─────────────────────────────────────────────
+# ── SECTION 4: Theoretical prices ────────────────────────────────
 
 bs_call_price = bs_call(S, K, T, RISK_FREE_RATE, sigma)
 bs_put_price  = bs_put(S, K, T, RISK_FREE_RATE, sigma)
@@ -90,9 +73,7 @@ print(f"BS put  price:     ${bs_put_price:.4f}")
 print(f"Market put  price: ${put_market_price:.4f}")
 
 
-# ─────────────────────────────────────────────
-# SECTION 5: Put-call parity check
-# ─────────────────────────────────────────────
+# ── SECTION 5: Put-call parity check ─────────────────────────────
 
 lhs = bs_call_price - bs_put_price
 rhs = S - K * math.exp(-RISK_FREE_RATE * T)
@@ -103,9 +84,7 @@ print(f"S - K * e^(-rT)    = {rhs:.6f}")
 print(f"Difference         = {abs(lhs - rhs):.2e}   (should be near zero)")
 
 
-# ─────────────────────────────────────────────
-# SECTION 6: Greeks
-# ─────────────────────────────────────────────
+# ── SECTION 6: Greeks ─────────────────────────────────────────────
 
 call_delta = delta(S, K, T, RISK_FREE_RATE, sigma, 'call')
 put_delta  = delta(S, K, T, RISK_FREE_RATE, sigma, 'put')
