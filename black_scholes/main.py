@@ -44,8 +44,14 @@ atm_put  = puts_df.loc[(puts_df["strike"] - S).abs().idxmin()]
 K = atm_call["strike"]
 print(f"\nATM strike selected: ${K:.2f}")
 
-call_market_price = (atm_call["bid"] + atm_call["ask"]) / 2
-put_market_price  = (atm_put["bid"]  + atm_put["ask"])  / 2
+def get_price(row):
+    bid, ask = row["bid"], row["ask"]
+    if bid > 0 and ask > 0:
+        return (bid + ask) / 2
+    return row["lastPrice"]
+
+call_market_price = get_price(atm_call)
+put_market_price  = get_price(atm_put)
 print(f"ATM call mid-price: ${call_market_price:.2f}")
 print(f"ATM put  mid-price: ${put_market_price:.2f}")
 
